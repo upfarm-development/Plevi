@@ -1,0 +1,8 @@
+// Placeholders, so the project builds from a fresh clone's perspective only
+// once your own identifier and team are filled in. Copy Local.xcconfig.example
+// to Local.xcconfig (not tracked) and put real values there; whatever it sets
+// overrides what is below.
+PLEVI_APP_ID = com.example.plevi
+DEVELOPMENT_TEAM =
+
+#include? "Local.xcconfig"

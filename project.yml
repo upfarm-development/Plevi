@@ -1,0 +1,193 @@
+name: Plevi
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    # 26.1 for tabViewBottomAccessory(isEnabled:) — the only way to hide the
+    # mini player without attaching and detaching the accessory, which
+    # rebuilds the tab view and loses every scroll position.
+    iOS: "26.1"
+    watchOS: "26.0"
+  createIntermediateGroups: true
+
+configFiles:
+  Debug: Config/Plevi.xcconfig
+  Release: Config/Plevi.xcconfig
+
+packages:
+  PleviKit:
+    path: Packages/PleviKit
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    # Version and signing live here rather than on the phone target because there are two apps now
+    # and Apple requires the watch app's version and build to match its host's exactly — an archive
+    # is rejected outright when they drift.
+    CODE_SIGN_STYLE: Automatic
+    # The team and the bundle identifier are not set here: they come from Config/Plevi.xcconfig,
+    # which has placeholders, and Config/Local.xcconfig (not tracked) holds the real ones — see the
+    # first.
+    CURRENT_PROJECT_VERSION: 490
+    MARKETING_VERSION: 0.1.0
+
+targets:
+  Plevi:
+    type: application
+    platform: iOS
+    sources:
+      - App/Sources
+      - App/Resources
+      - Shared/Sources
+    dependencies:
+      # Embeds the watch app in Plevi.app/Watch. XcodeGen turns a dependency
+      # on a watchOS target into the Embed Watch Content phase on its own.
+      - target: PleviWatch
+      - package: PleviKit
+        products:
+          - PleviDomain
+          - PleviTransport
+          - PleviKeychain
+          - PleviSubsonicProvider
+          - PleviLibraryIndex
+          - PleviPalette
+          - PleviAudio
+          - PleviPlexProvider
+          - PleviMockProvider
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Plevi
+        # Without these the generated plist keeps XcodeGen's 1.0/1 defaults
+        # and Settings → About reports the wrong build.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        # `audio` keeps playback alive; `fetch` and `processing` are the two background jobs the
+        # library refresh uses — see `PleviApp`.
+        UIBackgroundModes: [audio, fetch, processing]
+        BGTaskSchedulerPermittedIdentifiers:
+          - $(PRODUCT_BUNDLE_IDENTIFIER).refresh
+          - $(PRODUCT_BUNDLE_IDENTIFIER).walk
+          - $(PRODUCT_BUNDLE_IDENTIFIER).watch
+        # CarPlay is a scene of its own, driven by the templates rather than by any of the app's
+        # views.
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+          UISceneConfigurations:
+            CPTemplateApplicationSceneSessionRoleApplication:
+              - UISceneClassName: CPTemplateApplicationScene
+                UISceneConfigurationName: Plevi-CarPlay
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).CarPlaySceneDelegate
+        ITSAppUsesNonExemptEncryption: false
+        # The local network is used for two things: reaching the user's own music server when it
+        # sits on their home network (a private address or a .local name), and Remote Control
+        # finding, and being found by, their other devices…
+        NSLocalNetworkUsageDescription: "Plevi uses your local network to reach your own music server when you are at home, and to find, and be found by, your other devices running Plevi — so one can control what another is playing."
+        NSBonjourServices:
+          - _plevi-remote._tcp
+        # Portrait only on iPhone.
+        UISupportedInterfaceOrientations~iphone:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(PLEVI_APP_ID)
+        TARGETED_DEVICE_FAMILY: "1,2"
+        # `com.apple.developer.carplay-audio` is granted and in the provisioning profile, so this
+        # applies to device builds too — not only the simulator, which never checked the grant to
+        # begin with.
+        CODE_SIGN_ENTITLEMENTS: App/Plevi.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        # Every icon in the pack ships, and each alternate is named here so
+        # `setAlternateIconName` can ask for it. Without INCLUDE_ALL, only the
+        # primary icon is built into the app.
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
+        ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES:
+          - AppIcon-play-cherry-cream
+          - AppIcon-play-lilac
+          - AppIcon-play-ocean
+          - AppIcon-play-sage
+    # Puts the unit tests on the Plevi scheme, so `xcodebuild test -scheme
+    # Plevi` runs them and `xcodebuild build -scheme Plevi` is unchanged.
+    scheme:
+      testTargets:
+        - PleviAppTests
+
+  # Unit tests for the app's own logic, run inside the app on a simulator.
+  PleviAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - App/Tests
+    dependencies:
+      - target: Plevi
+      - package: PleviKit
+        product: PleviDomain
+        link: false
+      - package: PleviKit
+        product: PleviTransport
+        link: false
+      - package: PleviKit
+        product: PleviLibraryIndex
+        link: false
+      - package: PleviKit
+        product: PleviMockProvider
+        link: false
+      - package: PleviKit
+        product: PleviAudio
+        link: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(PLEVI_APP_ID).tests
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+
+  # The watch app.
+  PleviWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - Watch/Sources
+      - Watch/Resources
+      - Shared/Sources
+    dependencies:
+      - package: PleviKit
+        products:
+          - PleviDomain
+          - PleviTransport
+          - PleviKeychain
+          - PleviSubsonicProvider
+          - PleviPlexProvider
+          - PleviLibraryIndex
+          # For TranscodePolicy alone — the rule about which songs are converted, shared with the
+          # phone rather than written twice.
+          - PleviAudio
+          # The colour a sleeve gives off, for the wash behind the playing
+          # screen. Pure maths, no UI framework, tested in the package.
+          - PleviPalette
+    info:
+      path: Watch/Info.plist
+      properties:
+        CFBundleDisplayName: Plevi
+        # Without these the generated plist keeps XcodeGen's 1.0/1 defaults.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        WKApplication: true
+        WKCompanionAppBundleIdentifier: $(PLEVI_APP_ID)
+        # The same key the phone uses, in the watch app's own plist.
+        UIBackgroundModes:
+          - audio
+    settings:
+      base:
+        # Apple requires the watch app's identifier to be the host's with a
+        # suffix. Anything else fails embedded-app validation.
+        PRODUCT_BUNDLE_IDENTIFIER: $(PLEVI_APP_ID).watchkitapp
+        TARGETED_DEVICE_FAMILY: "4"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
