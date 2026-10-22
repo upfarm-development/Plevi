@@ -39,7 +39,7 @@ Home keeps giving you reasons to dig back into your own library:
 
 Your phone becomes the remote for the iPad on the kitchen counter, or the other way round. Pick another device running Plevi from the player or from Home, and whatever you play starts there: albums, artists, playlists and radio stations. You see its queue and progress, and you can skip, seek, change what's next and set the volume, including with your phone's volume buttons. The music carries on if you disconnect. Switch on Allow Remote Control in Settings on the device you want to control.
 
-Devices find each other on your network with nothing to type in. Devices on the same Apple ID or server account trust each other automatically, otherwise you confirm a short code on both screens, and everything goes straight between the two devices over an encrypted connection.
+Devices find each other on your network with nothing to type in. The first time two devices connect, you confirm the same short code on both screens, and everything goes straight between the two devices over an encrypted connection.
 
 ### And the rest
 
