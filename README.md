@@ -35,6 +35,12 @@ Home keeps giving you reasons to dig back into your own library:
 - **Released on This Day.** Records that came out on today's date.
 - **Editors' Choice.** One well-reviewed record a day, picked from the critic scores in your library rather than from your listening, and varied so it doesn't keep landing on the same genre or decade.
 
+### Take over another device
+
+Your phone becomes the remote for the iPad on the kitchen counter, or the other way round. Pick another device running Plevi from the player or from Home, and whatever you play starts there: albums, artists, playlists and radio stations. You see its queue and progress, and you can skip, seek, change what's next and set the volume, including with your phone's volume buttons. The music carries on if you disconnect. Switch on Allow Remote Control in Settings on the device you want to control.
+
+Devices find each other on your network with nothing to type in. Devices on the same Apple ID or server account trust each other automatically, otherwise you confirm a short code on both screens, and everything goes straight between the two devices over an encrypted connection.
+
 ### And the rest
 
 - **More than one library.** Plex and Navidrome libraries can sit side by side. You switch between them quickly and can search across them.
@@ -43,7 +49,6 @@ Home keeps giving you reasons to dig back into your own library:
 - **The usual things, done properly.** Ratings, favourites, playlists, lyrics, a sleep timer, and a seek bar drawn as the waveform of the song.
 - **Offline.** Download songs, albums and playlists. Changes you make without a connection, like ratings and favourites, are sent to the server when it's reachable again.
 - **Every screen.** iPhone and iPad layouts, an Apple Watch app, and CarPlay.
-- **Remote Control.** Start music on one of your devices from another, over an encrypted connection between two devices signed in to the same server.
 
 ## Privacy
 
